@@ -1,0 +1,69 @@
+﻿@page "/"
+
+@inject IAppSettingsService Svc
+
+@if (Svc.AppSettings.DefaultConnectionString is null)
+{
+    <p>Need to choose a database in your settings.</p>
+}
+else
+{
+    <h1>Eval Runs</h1>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Run ID</th>
+                <th>Candidate</th>
+                <th>Period</th>
+                <th>Status</th>
+                <th>Run Log Last Entry</th>
+            </tr>
+        </thead>
+        <tbody>
+        @if (Runs.Count > 0)
+        {
+            @foreach (var run in Runs)
+            {
+                <tr>
+                    <td>@run.Id</td>
+                    <td>
+                        @run.CandidateName<br />
+                        @run.CalcType
+                    </td>
+                    <td>@run.PeriodRangeLabel</td>
+                    <td>@run.RunStatus</td>
+                    <td>@run.RunLogLastEntry</td>
+                </tr>
+            }
+        }
+        else
+        {
+                    <tr>
+                        <td colspan="100%">
+                            <span style="width: 100%; text-align: left;">No records found</span>
+                        </td>
+                    </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<EvalRunLookupDto> _runs = new List<EvalRunLookupDto>();
+
+    public IReadOnlyCollection<EvalRunLookupDto> Runs => new ObservableCollection<EvalRunLookupDto>(_runs.AsReadOnly());
+
+    protected override async Task OnInitializedAsync()
+    {
+        Svc.OnChange += StateHasChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Svc.AppSettings.DefaultConnectionString != null)
+        {
+            _runs = await Db.FetchLatestRunsAsync(Svc.AppSettings.DefaultConnectionString);
+            StateHasChanged();
+        }
+    }
+}

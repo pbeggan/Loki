@@ -1,0 +1,37 @@
+﻿@using Loki.Domain.Interfaces
+
+@inject IAppSettingsService Svc
+
+<label>Database:</label>
+<select value="@Svc.AppSettings.DefaultConnectionString" class="form-control" @onchange="@OnSelect">
+
+    @foreach (var db in DatabaseList)
+    {
+        <option value="@db.ConnectionString">@db.Name</option>
+    }
+
+</select>
+
+@code {
+    List<Database> DatabaseList = new List<Database>() {
+            new Database ("QA (Bullhorn5008)", "Data Source=DATABASE2.bh-bos2.bullhorn.com\\BULLHORN_LG21;Initial Catalog=BULLHORN5008;User ID=bullhorn1;Password=rayham123bullhorn2"),
+            new Database ("DEV (Bullhorn4990)", "Data Source=DATABASE2.bh-bos2.bullhorn.com\\BULLHORN_LG21;Initial Catalog=BULLHORN4990;User ID=bullhorn1;Password=rayham123bullhorn2")
+        };
+
+    async Task OnSelect(ChangeEventArgs e)
+    {
+        Svc.AppSettings.DefaultConnectionString = e.Value?.ToString();
+        await Svc.Save(Svc.AppSettings);
+    }
+
+    public class Database
+    {
+        public Database(string name, string connectionString)
+        {
+            Name = name;
+            ConnectionString = connectionString;
+        }
+        public string Name { get; set; }
+        public string ConnectionString { get; set; }
+    }
+}
