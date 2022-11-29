@@ -24,7 +24,7 @@ namespace Loki.Infrastructure.Persistence
                         With LatestLogs As
 	                    (
 		                    Select
-                              latest_logs.timeLaborEvalRunID, logs.[message]
+                              latest_logs.timeLaborEvalRunID, JSON_VALUE(logs.[message], '$.message') as message
                             From
                               (Select
                                  Max(timeLaborEvalRunLogID) As latestLogID, timeLaborEvalRunID
@@ -42,6 +42,7 @@ namespace Loki.Infrastructure.Persistence
                             , uc.name as CandidateName
                             , ctl.label as CalcType
                             , ci.label as PeriodRangeLabel
+                            , er.startedAtUtc as StartedAtUtc
                             , er.timeLaborEvalRunStatusLookupId as RunStatusId
                             , logs.message as RunLogLastEntry
                         From 

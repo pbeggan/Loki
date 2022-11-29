@@ -2,21 +2,42 @@
 
 @inject IAppSettingsService Svc
 
-<label>Database:</label>
-<select value="@Svc.AppSettings.DefaultConnectionString" class="form-control" @onchange="@OnSelect">
+@if (Svc.AppSettings.Databases.Any())
+{
+    <label>Database:</label>
+    <select value="@Svc.AppSettings.DefaultConnectionString" class="form-control" @onchange="@OnSelect">
 
-    @foreach (var db in DatabaseList)
-    {
-        <option value="@db.ConnectionString">@db.Name</option>
-    }
+        @foreach (var db in Svc.AppSettings.Databases)
+        {
+            <option value="@db.ConnectionString">@db.Name</option>
+        }
 
-</select>
+    </select>
+}
+
+<label>Available Databases</label>
+<table class="table" style="width:100%">
+    <tbody>
+        @foreach (var db in DatabaseList)
+        {
+            <tr>
+                <td><input type="text" @bind="db.Name" placeholder="Name" style="width:100%" /></td>
+                <td><input type="text" @bind="db.ConnectionString" placeholder="Connection String" style="width:100%" /></td>
+                <td></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<button @onclick="@InvokeAddRow">Add Row</button>
+<button @onclick="@SaveDbs">Save Changes</button>
 
 @code {
-    List<Database> DatabaseList = new List<Database>() {
-            new Database ("QA (Bullhorn5008)", "Data Source=DATABASE2.bh-bos2.bullhorn.com\\BULLHORN_LG21;Initial Catalog=BULLHORN5008;User ID=bullhorn1;Password=rayham123bullhorn2"),
-            new Database ("DEV (Bullhorn4990)", "Data Source=DATABASE2.bh-bos2.bullhorn.com\\BULLHORN_LG21;Initial Catalog=BULLHORN4990;User ID=bullhorn1;Password=rayham123bullhorn2")
-        };
+    List<Database> DatabaseList { get; set; } = new List<Database>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        DatabaseList = Svc.AppSettings.Databases.ToList();
+    }
 
     async Task OnSelect(ChangeEventArgs e)
     {
@@ -24,14 +45,15 @@
         await Svc.Save(Svc.AppSettings);
     }
 
-    public class Database
+    async Task InvokeAddRow()
     {
-        public Database(string name, string connectionString)
-        {
-            Name = name;
-            ConnectionString = connectionString;
-        }
-        public string Name { get; set; }
-        public string ConnectionString { get; set; }
+        DatabaseList.Add(new Database("", ""));
+    }
+
+    async Task SaveDbs()
+    {
+        DatabaseList.RemoveAll(db => !db.IsValid);
+        Svc.AppSettings.Databases = DatabaseList.ToArray();
+        await Svc.Save(Svc.AppSettings);
     }
 }

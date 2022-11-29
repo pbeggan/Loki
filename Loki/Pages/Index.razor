@@ -12,11 +12,12 @@ else
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
-                <th>Run ID</th>
-                <th>Candidate</th>
-                <th>Period</th>
-                <th>Status</th>
-                <th>Run Log Last Entry</th>
+                <th width="3%"></th>
+                <th width="5%">ID</th>
+                <th width="15%">Candidate</th>
+                <th width="15%">Period</th>
+                <th width="15%">Started</th>
+                <th width="47%">Run Log Last Entry</th>
             </tr>
         </thead>
         <tbody>
@@ -25,13 +26,17 @@ else
             @foreach (var run in Runs)
             {
                 <tr>
-                    <td>@run.Id</td>
                     <td>
-                        @run.CandidateName<br />
-                        @run.CalcType
+                        <span class="@run.GetRunStatusCss()"></span>
+                    </td>
+                    <td>
+                        @run.Id
+                    </td>
+                    <td>
+                        @run.CandidateName | @run.CalcType
                     </td>
                     <td>@run.PeriodRangeLabel</td>
-                    <td>@run.RunStatus</td>
+                    <td>@DateTimeUtility.ToTimeAgo(run.StartedAtUtc, DateTime.UtcNow)</td>
                     <td>@run.RunLogLastEntry</td>
                 </tr>
             }
@@ -60,10 +65,18 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender) return;
         if (Svc.AppSettings.DefaultConnectionString != null)
         {
-            _runs = await Db.FetchLatestRunsAsync(Svc.AppSettings.DefaultConnectionString);
-            StateHasChanged();
+            try
+            {
+                _runs = await Db.FetchLatestRunsAsync(Svc.AppSettings.DefaultConnectionString);
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                var x = 0;
+            }
         }
     }
 }
