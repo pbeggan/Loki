@@ -5,18 +5,20 @@
 @if (Svc.AppSettings.Databases.Any())
 {
     <label>Database:</label>
-    <select value="@Svc.AppSettings.DefaultConnectionString" class="form-control" @onchange="@OnSelect">
+    <select value="@Svc.AppSettings.DefaultConnectionStringIndex" class="form-control" @onchange="@OnSelect">
 
+        @{ var ctr = 0; }
         @foreach (var db in Svc.AppSettings.Databases)
         {
-            <option value="@db.ConnectionString">@db.Name</option>
+            <option value="@ctr">@db.Name</option>
+            ctr++;
         }
 
     </select>
 }
 
 <label>Available Databases</label>
-<table class="table" style="width:100%">
+<table class="table table-bordered table-striped" style="width:100%">
     <tbody>
         @foreach (var db in DatabaseList)
         {
@@ -34,14 +36,11 @@
 @code {
     List<Database> DatabaseList { get; set; } = new List<Database>();
 
-    protected override async Task OnInitializedAsync()
-    {
-        DatabaseList = Svc.AppSettings.Databases.ToList();
-    }
+    protected override async Task OnInitializedAsync() => DatabaseList = Svc.AppSettings.Databases.ToList();
 
     async Task OnSelect(ChangeEventArgs e)
     {
-        Svc.AppSettings.DefaultConnectionString = e.Value?.ToString();
+        Svc.AppSettings.DefaultConnectionStringIndex = int.TryParse(e.Value?.ToString(), out var i) ? i : null;
         await Svc.Save(Svc.AppSettings);
     }
 

@@ -9,7 +9,9 @@ namespace Loki.Domain.Interfaces
     public interface IAppSettings
     {
         Database[] Databases { get; set; }
-        string? DefaultConnectionString { get; set; }
+        int? DefaultConnectionStringIndex { get; set; }
+        string? DefaultConnectionStringName => DefaultConnectionStringIndex is null ? null : Databases.ElementAt(DefaultConnectionStringIndex.Value).Name;
+        string? DefaultConnectionStringValue => DefaultConnectionStringIndex is null ? null : Databases.ElementAt(DefaultConnectionStringIndex.Value).ConnectionString;
         bool CollapseNavMenu { get; set; }
         // time zone
     }

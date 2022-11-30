@@ -37,7 +37,7 @@ namespace Loki.Infrastructure.Persistence
                             On
                               logs.timeLaborEvalRunLogID = latest_logs.latestLogID
 	                    )
-                        Select Top 25 er.timeLaborEvalRunId as Id
+                        Select Top 100 er.timeLaborEvalRunId as Id
                             , c.candidateId as CandidateId
                             , uc.name as CandidateName
                             , ctl.label as CalcType
@@ -45,6 +45,16 @@ namespace Loki.Infrastructure.Persistence
                             , er.startedAtUtc as StartedAtUtc
                             , er.timeLaborEvalRunStatusLookupId as RunStatusId
                             , logs.message as RunLogLastEntry
+	                        , ExpenseSheetIds = (STUFF(
+							 (SELECT ',' + CONVERT(varchar(10), epes.expenseSheetID) FROM bullhorn1.BH_TimeLaborEvalPeriodExpenseSheet epes 
+								WHERE er.timeLaborEvalPeriodID = epes.timeLaborEvalPeriodID
+							 FOR XML PATH ('')), 1, 1, ''
+						   ))
+						   , TimeSheetIds = (STUFF(
+							 (SELECT ',' + CONVERT(varchar(10), epts.timeSheetID) FROM bullhorn1.BH_TimeLaborEvalPeriodTimeSheet epts 
+								WHERE er.timeLaborEvalPeriodID = epts.timeLaborEvalPeriodID
+							 FOR XML PATH ('')), 1, 1, ''
+						   ))
                         From 
                             bullhorn1.BH_TimeLaborEvalRun er
                             Join bullhorn1.BH_TimeLaborEvalPeriod ep

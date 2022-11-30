@@ -2,13 +2,16 @@
 
 @inject IAppSettingsService Svc
 
-@if (Svc.AppSettings.DefaultConnectionString is null)
+@if (Svc.AppSettings.DefaultConnectionStringIndex is null)
 {
-    <p>Need to choose a database in your settings.</p>
+    <p>Please choose a database in your Settings.</p>
 }
 else
 {
-    <h1>Eval Runs</h1>
+    // TODO: click on individual run, show run detail page incl. full run logs
+    // Add refresh, change # of records to show
+    // Show eval units somewhere..
+    <h1>Latest Eval Runs | @Svc.AppSettings.DefaultConnectionStringName</h1>
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
@@ -39,6 +42,9 @@ else
                     <td>@DateTimeUtility.ToTimeAgo(run.StartedAtUtc, DateTime.UtcNow)</td>
                     <td>@run.RunLogLastEntry</td>
                 </tr>
+                <tr>
+                    <td colspan="100%">TS: @run.TimeSheetIds ES: @run.ExpenseSheetIds</td>
+                </tr>
             }
         }
         else
@@ -66,11 +72,11 @@ else
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        if (Svc.AppSettings.DefaultConnectionString != null)
+        if (Svc.AppSettings.DefaultConnectionStringIndex != null)
         {
             try
             {
-                _runs = await Db.FetchLatestRunsAsync(Svc.AppSettings.DefaultConnectionString);
+                _runs = await Db.FetchLatestRunsAsync(Svc.AppSettings.DefaultConnectionStringValue!);
                 StateHasChanged();
             }
             catch (Exception ex)

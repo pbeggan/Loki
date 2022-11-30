@@ -16,6 +16,8 @@ namespace Loki.Domain.Dtos
         public DateTime StartedAtUtc { get; set; }
         public int RunStatusId { get; set; }
         public string RunLogLastEntry { get; set; } = null!;
+        public string? TimeSheetIds { get; set; }
+        public string? ExpenseSheetIds { get; set; }
         public string GetRunStatusCss()
         {
             return RunStatusId switch
