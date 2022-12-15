@@ -1,88 +1,9 @@
 ﻿@page "/"
 
-@inject IAppSettingsService Svc
 
-@if (Svc.AppSettings.DefaultConnectionStringIndex is null)
-{
-    <p>Please choose a database in your Settings.</p>
-}
-else
-{
-    // TODO: click on individual run, show run detail page incl. full run logs
-    // Add refresh, change # of records to show
-    // Show eval units somewhere..
-    <h1>Latest Eval Runs | @Svc.AppSettings.DefaultConnectionStringName</h1>
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th width="3%"></th>
-                <th width="5%">ID</th>
-                <th width="15%">Candidate</th>
-                <th width="15%">Period</th>
-                <th width="15%">Started</th>
-                <th width="47%">Run Log Last Entry</th>
-            </tr>
-        </thead>
-        <tbody>
-        @if (Runs.Count > 0)
-        {
-            @foreach (var run in Runs)
-            {
-                <tr>
-                    <td>
-                        <span class="@run.GetRunStatusCss()"></span>
-                    </td>
-                    <td>
-                        @run.Id
-                    </td>
-                    <td>
-                        @run.CandidateName | @run.CalcType
-                    </td>
-                    <td>@run.PeriodRangeLabel</td>
-                    <td>@DateTimeUtility.ToTimeAgo(run.StartedAtUtc, DateTime.UtcNow)</td>
-                    <td>@run.RunLogLastEntry</td>
-                </tr>
-                <tr>
-                    <td colspan="100%">TS: @run.TimeSheetIds ES: @run.ExpenseSheetIds</td>
-                </tr>
-            }
-        }
-        else
-        {
-                    <tr>
-                        <td colspan="100%">
-                            <span style="width: 100%; text-align: left;">No records found</span>
-                        </td>
-                    </tr>
-        }
-        </tbody>
-    </table>
-}
+
+Welcome to Loki!
 
 @code {
-    private List<EvalRunLookupDto> _runs = new List<EvalRunLookupDto>();
-
-    public IReadOnlyCollection<EvalRunLookupDto> Runs => new ObservableCollection<EvalRunLookupDto>(_runs.AsReadOnly());
-
-    protected override async Task OnInitializedAsync()
-    {
-        Svc.OnChange += StateHasChanged;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender) return;
-        if (Svc.AppSettings.DefaultConnectionStringIndex != null)
-        {
-            try
-            {
-                _runs = await Db.FetchLatestRunsAsync(Svc.AppSettings.DefaultConnectionStringValue!);
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                var x = 0;
-            }
-        }
-    }
+   
 }

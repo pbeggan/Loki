@@ -14,11 +14,58 @@ namespace Loki.Infrastructure.Persistence
             DbConnection cnn = new SqlConnection(connectionString);
             return cnn;
         }
+       
+        public static async Task<List<EvalRunLogLookupDto>> FetchRunLogs(string connectionString, long runId)
+        {
+            using var conn = GetOpenConnection(connectionString);
+
+            var runLogs = await conn.QueryAsync<EvalRunLogLookupDto>(@$"
+
+                        Select erl.timeLaborEvalRunLogId as Id
+                            , erl.addedAtUtc as AddedAtUtc
+                            , lsl.label as LogSeverity
+                            , erl.message as Message
+                        From 
+                            bullhorn1.BH_TimeLaborEvalRunLog erl
+                            Join bullhorn1.BH_LogSeverityLookup lsl
+                                On erl.logSeverityLookupID = lsl.logSeverityLookupID
+                        Where erl.timeLaborEvalRunID = {runId}
+                        Order By erl.addedAtUtc Desc"
+            );
+
+            return runLogs.ToList();
+        }
+
+        public static async Task<List<IssueLookupDto>> FetchLatestIssuesAsync(string connectionString)
+        {
+            using var conn = GetOpenConnection(connectionString);
+
+            var issues = await conn.QueryAsync<IssueLookupDto>(@"
+
+                        Select Top 100 i.issueId as Id
+                            , i.action
+                            , i.actionEntityName as ActionEntity
+                            , i.actionEntityID 
+                            , i.dateAdded
+                            , ii.sourceEntity
+                            , ii.sourceEntityID
+                            , ii.comments
+                            , ii.description
+                          From bullhorn1.BH_Issue i
+                          Join bullhorn1.BH_IssueItems ii
+                            On i.issueID = ii.issueID
+                          Order By i.issueID Desc"
+            );
+
+            return issues.ToList();
+        }
 
         public static async Task<List<EvalRunLookupDto>> FetchLatestRunsAsync(string connectionString)
         {
             using var conn = GetOpenConnection(connectionString);
-
+            //todo: placement names and ids
+            // dictionary, timesheetid to placement name
+            // expensesheetid to placement name
             var runs = await conn.QueryAsync<EvalRunLookupDto>(@"
 
                         With LatestLogs As
@@ -27,7 +74,7 @@ namespace Loki.Infrastructure.Persistence
                               latest_logs.timeLaborEvalRunID, JSON_VALUE(logs.[message], '$.message') as message
                             From
                               (Select
-                                 Max(timeLaborEvalRunLogID) As latestLogID, timeLaborEvalRunID
+                                 Max(addedAtUtc) As latestUtc, timeLaborEvalRunID
                                From
                                   bullhorn1.BH_TimeLaborEvalRunLog
                                Group By
@@ -35,7 +82,8 @@ namespace Loki.Infrastructure.Persistence
                             Join
                               bullhorn1.BH_TimeLaborEvalRunLog logs
                             On
-                              logs.timeLaborEvalRunLogID = latest_logs.latestLogID
+                              logs.timeLaborEvalRunID = latest_logs.timeLaborEvalRunID And
+                                logs.addedAtUtc = latest_logs.latestUtc
 	                    )
                         Select Top 100 er.timeLaborEvalRunId as Id
                             , c.candidateId as CandidateId

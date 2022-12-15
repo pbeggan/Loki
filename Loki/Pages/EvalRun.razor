@@ -1,0 +1,49 @@
+﻿@using Newtonsoft.Json
+
+@page "/runs/{runId:long}"
+@inject IAppSettingsService Svc
+
+<h1>Eval Run @RunId</h1>
+
+@if (!RunLogs.Any())
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h2>Summary</h2>
+    <p>TODO</p>
+    <h2>Run Logs</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Severity</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in RunLogs)
+            {
+                <tr>
+                    <td>@log.Id</td>
+                    <td>@log.LogSeverity</td>
+                    <td>@Newtonsoft.Json.Linq.JToken.Parse(log.Message).ToString(Formatting.Indented)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public long RunId { get; set; }
+
+    private List<EvalRunLogLookupDto> _runLogs = new List<EvalRunLogLookupDto>();
+
+    public IReadOnlyCollection<EvalRunLogLookupDto> RunLogs => new ObservableCollection<EvalRunLogLookupDto>(_runLogs.AsReadOnly());
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _runLogs = await Db.FetchRunLogs(Svc.AppSettings.DefaultConnectionStringValue!, RunId);
+    }
+}

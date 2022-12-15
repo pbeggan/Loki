@@ -8,7 +8,7 @@ namespace Loki.Domain.Dtos
 {
     public class EvalRunLookupDto
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public int CandidateId { get; set; }
         public string CandidateName { get; set; } = null!;
         public string CalcType { get; set; } = null!;
@@ -28,11 +28,5 @@ namespace Loki.Domain.Dtos
                 _ => throw new Exception($"Unhandled run status ID [{RunStatusId}]"),
             };
         }
-
-//        timeLaborEvalRunStatusLookupID label
-//1	Created
-//2	Running
-//3	Succeeded
-//4	Failed
     }
 }
