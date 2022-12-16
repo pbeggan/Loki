@@ -1,0 +1,67 @@
+﻿@page "/timesheet/"
+
+
+@inject IAppSettingsService Svc
+@inject NavigationManager NavManager
+
+@if (Svc.AppSettings.DefaultConnectionStringIndex is null)
+{
+    <p>Please choose a database in your Settings.</p>
+}
+else
+{
+    <h1>Timesheet Change Log</h1>
+    @if (Sheets.Any())
+    {
+        <label>Select a timesheet:</label>
+        <select class="form-control" @onchange="@OnSelect">
+
+            <optgroup label="** Recently Modified **">
+                @foreach (var sheet in Sheets.Where(w => w.HasRecentChanges).OrderBy(o => o.CandidateName).ThenBy(o => o.PlacementName).ThenByDescending(o => o.WeekEndingDate).ToList())
+                    {
+                        <option value="@sheet.Id">
+                            (@sheet.Id) @sheet.CandidateName - @sheet.PlacementName - @sheet.WeekEndingDate.Date.ToShortDateString()
+                        </option>
+                    }
+            </optgroup>
+            @foreach (var group in Sheets.GroupBy(g => g.CandidateName).OrderBy(o => o.Key))
+            {
+                <optgroup label="@group.Key">
+                    @foreach (var sheet in group.OrderBy(o => o.PlacementName).ThenByDescending(o => o.WeekEndingDate).ToList())
+                    {
+                        <option value="@sheet.Id">
+                            (@sheet.Id) @sheet.PlacementName - @sheet.WeekEndingDate.Date.ToShortDateString()
+                        </option>
+                    }
+                </optgroup>
+            }
+
+        </select>
+    }
+}
+
+@code {
+    private List<TimesheetLookupDto> Sheets = new List<TimesheetLookupDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Svc.AppSettings.DefaultConnectionStringIndex != null)
+        {
+            try
+            {
+                Sheets = await Db.FetchTimesheetLookups(Svc.AppSettings.DefaultConnectionStringValue!);
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                //todo
+            }
+        }
+    }
+
+    async Task OnSelect(ChangeEventArgs e)
+    {
+        //Svc.AppSettings.DefaultConnectionStringIndex = int.TryParse(e.Value?.ToString(), out var i) ? i : null;
+        //await Svc.Save(Svc.AppSettings);
+    }
+}

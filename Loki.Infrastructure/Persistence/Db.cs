@@ -14,7 +14,32 @@ namespace Loki.Infrastructure.Persistence
             DbConnection cnn = new SqlConnection(connectionString);
             return cnn;
         }
-       
+
+        public static async Task<List<TimesheetLookupDto>> FetchTimesheetLookups(string connectionString)
+        {
+            using var conn = GetOpenConnection(connectionString);
+
+            var timesheets = await conn.QueryAsync<TimesheetLookupDto>(@$"
+
+                        Select ts.timeSheetId as Id
+                            , jo.title as PlacementName
+                            , uc.name as CandidateName
+                            , ts.periodEndingAt as WeekEndingDate
+                            , ts.externalId as ExternalId
+                            , (select case when DATEDIFF(minute, ts.lastModifiedAtUtc, sysutcdatetime()) > 800 then 0 else 1 end) as HasRecentChanges
+                        From 
+                            bullhorn1.BH_Timesheet ts
+                            Join bullhorn1.BH_Placement p
+                                On ts.placementId = p.placementId
+                            Join bullhorn1.BH_JobOpportunity jo
+                                On p.jobPostingId = jo.jobPostingId
+                            Join bullhorn1.BH_UserContact uc
+                                On p.userId = uc.userId"
+            );
+
+            return timesheets.ToList();
+        }
+
         public static async Task<List<EvalRunLogLookupDto>> FetchRunLogs(string connectionString, long runId)
         {
             using var conn = GetOpenConnection(connectionString);
