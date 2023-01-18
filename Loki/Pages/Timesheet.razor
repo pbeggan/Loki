@@ -1,5 +1,6 @@
-﻿@page "/timesheet/"
+﻿@using Markdig
 
+@page "/timesheet/"
 
 @inject IAppSettingsService Svc
 @inject NavigationManager NavManager
@@ -14,23 +15,26 @@ else
     @if (Sheets.Any())
     {
         <label>Select a timesheet:</label>
-        <select class="form-control" @onchange="@OnSelect">
-
+        <select value="" class="form-control" @onchange="@OnSelect">
+            <option value="">-- Select --</option>
             <optgroup label="** Recently Modified **">
-                @foreach (var sheet in Sheets.Where(w => w.HasRecentChanges).OrderBy(o => o.CandidateName).ThenBy(o => o.PlacementName).ThenByDescending(o => o.WeekEndingDate).ToList())
+                @foreach (var sheet in Sheets.Where(w => w.HasRecentChanges).OrderBy(o => o.UserId).ThenBy(o => o.PlacementId).ThenByDescending(o => o.WeekEndingDate).ToList())
                     {
                         <option value="@sheet.Id">
-                            (@sheet.Id) @sheet.CandidateName - @sheet.PlacementName - @sheet.WeekEndingDate.Date.ToShortDateString()
+                        (@sheet.Id) @sheet.GetCandidate() - @sheet.GetPlacement() - @sheet.WeekEndingDate.Date.ToShortDateString()
                         </option>
                     }
             </optgroup>
-            @foreach (var group in Sheets.GroupBy(g => g.CandidateName).OrderBy(o => o.Key))
+            @foreach (var group in Sheets.GroupBy(g => g.GetCandidate()).OrderBy(o => o.Key))
             {
                 <optgroup label="@group.Key">
-                    @foreach (var sheet in group.OrderBy(o => o.PlacementName).ThenByDescending(o => o.WeekEndingDate).ToList())
+                    @{
+                        var max = group.Max(m => m.Id).ToString().Length + 2; 
+                    }
+                    @foreach (var sheet in group.OrderBy(o => o.PlacementId).ThenByDescending(o => o.WeekEndingDate).ToList())
                     {
                         <option value="@sheet.Id">
-                            (@sheet.Id) @sheet.PlacementName - @sheet.WeekEndingDate.Date.ToShortDateString()
+                            @Markdown.ToPlainText(@sheet.GetPaddedSheetId(max)) @sheet.GetCandidate() - @sheet.GetPlacement() - @sheet.WeekEndingDate.Date.ToShortDateString()
                         </option>
                     }
                 </optgroup>

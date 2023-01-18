@@ -4,9 +4,14 @@ VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loki", "Loki\Loki.csproj", "{B28F08DE-D075-4FFA-8B3D-15A30B35EB9C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loki.Domain", "Loki.Domain\Loki.Domain.csproj", "{8442CCF1-9702-48AA-ABA9-634D111EBC5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loki.Domain", "Loki.Domain\Loki.Domain.csproj", "{8442CCF1-9702-48AA-ABA9-634D111EBC5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loki.Infrastructure", "Loki.Infrastructure\Loki.Infrastructure.csproj", "{E645FC4A-335B-41D0-8130-2F27ECF5D890}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loki.Infrastructure", "Loki.Infrastructure\Loki.Infrastructure.csproj", "{E645FC4A-335B-41D0-8130-2F27ECF5D890}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{83B929A8-D745-479A-9496-5CD9A7A37C45}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,7 +38,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		        SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}
 		SolutionGuid = {B2F967C3-5948-4F38-A8F9-09990EBD5A40}
+		        SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}
 	EndGlobalSection
 EndGlobal

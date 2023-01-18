@@ -1,9 +1,26 @@
-﻿@page "/"
+﻿@using Markdig
 
+@page "/"
 
-
-Welcome to Loki!
+@dataResourceText
 
 @code {
-   
+    public MarkupString dataResourceText = new MarkupString("Loading resource ...");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            using var stream =
+                await FileSystem.OpenAppPackageFileAsync("Resources\\Raw\\README.md");
+            using var reader = new StreamReader(stream);
+
+            dataResourceText = new MarkupString(Markdown.ToHtml(await reader.ReadToEndAsync()));
+        }
+        catch (FileNotFoundException ex)
+        {
+            dataResourceText = new MarkupString("Data file not found.");
+            //Logger.LogError(ex, "'Resource/Raw/Data.txt' not found.");
+        }
+    }
 }

@@ -22,7 +22,9 @@ namespace Loki.Infrastructure.Persistence
             var timesheets = await conn.QueryAsync<TimesheetLookupDto>(@$"
 
                         Select ts.timeSheetId as Id
+                            , p.placementId as PlacementId
                             , jo.title as PlacementName
+                            , uc.userId as UserId
                             , uc.name as CandidateName
                             , ts.periodEndingAt as WeekEndingDate
                             , ts.externalId as ExternalId
