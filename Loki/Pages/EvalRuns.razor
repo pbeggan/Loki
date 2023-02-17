@@ -1,6 +1,5 @@
 ﻿@page "/runs/"
 
-
 @inject IAppSettingsService Svc
 @inject NavigationManager NavManager
 
@@ -10,7 +9,7 @@
 }
 else
 {
-    <h1>Latest Eval Runs</h1>
+    <PageHeader Title="Latest Eval Runs"></PageHeader>
     @if (Runs.Any())
     {
         <div class="mb-1">

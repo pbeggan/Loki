@@ -4,7 +4,7 @@
 
 @if (Svc.AppSettings.Databases.Any())
 {
-    <label>Database:</label>
+    <label>Select a database:</label>
     <select value="@Svc.AppSettings.DefaultConnectionStringIndex" class="form-control" @onchange="@OnSelect">
 
         @{ var ctr = 0; }
@@ -17,21 +17,23 @@
     </select>
 }
 
-<label>Available Databases</label>
-<table class="table table-bordered table-striped" style="width:100%">
-    <tbody>
-        @foreach (var db in DatabaseList)
-        {
-            <tr>
-                <td><input type="text" @bind="db.Name" placeholder="Name" style="width:100%" /></td>
-                <td><input type="text" @bind="db.ConnectionString" placeholder="Connection String" style="width:100%" /></td>
-                <td></td>
-            </tr>
-        }
-    </tbody>
-</table>
-<button @onclick="@InvokeAddRow">Add Row</button>
-<button @onclick="@SaveDbs">Save Changes</button>
+<section style="border: 1px solid black; padding: 20px; margin-top: 20px">
+    <h2>Available Databases</h2>
+    <table class="table table-bordered table-striped" style="width:100%">
+        <tbody>
+            @foreach (var db in DatabaseList)
+            {
+                <tr>
+                    <td><input type="text" @bind="db.Name" placeholder="Name" style="width:100%" /></td>
+                    <td><input type="text" @bind="db.ConnectionString" placeholder="Connection String" style="width:100%" /></td>
+                    <td></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button @onclick="@InvokeAddRow">Add Row</button>
+    <button @onclick="@SaveDbs">Save Changes</button>
+</section>
 
 @code {
     List<Database> DatabaseList { get; set; } = new List<Database>();

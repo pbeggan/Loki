@@ -1,6 +1,5 @@
 ﻿@page "/issues/"
 
-
 @inject IAppSettingsService Svc
 @inject NavigationManager NavManager
 
@@ -10,7 +9,7 @@
 }
 else
 {
-    <h1>Latest Issues</h1>
+    <PageHeader Title="Latest Issues"></PageHeader>
     <table class="table table-bordered table-striped">
         <thead>
             <tr>

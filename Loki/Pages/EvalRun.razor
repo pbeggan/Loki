@@ -3,7 +3,10 @@
 @page "/runs/{runId:long}"
 @inject IAppSettingsService Svc
 
-<h1>Eval Run @RunId</h1>
+@{
+    var title = "Eval Run " + @RunId;
+}
+<PageHeader Title="@title"></PageHeader>
 
 @if (!RunLogs.Any())
 {

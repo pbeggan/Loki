@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Loki.Data;
 using Loki.Shared;
 using Loki.Domain.Interfaces;
 
@@ -24,7 +23,6 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
-        builder.Services.AddSingleton<WeatherForecastService>();
         builder.Services.AddSingleton<IAppSettingsService, AppSettingsService>();
 
         return builder.Build();
