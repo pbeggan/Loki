@@ -6,7 +6,7 @@
 
 @if (Svc.AppSettings.DefaultConnectionStringIndex is null)
 {
-    <p>Please choose a database in your Settings.</p>
+    <PleaseChooseDb />
 }
 else
 {
@@ -14,50 +14,21 @@ else
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
-                <th width="3%"></th>
-                <th width="5%">ID</th>
-                <th width="20%">Candidate</th>
-                <th width="20%">Started</th>
-                <th width="52%">Run Log Last Entry</th>
+                <th>ID</th>
+                <th>Action</th>
+                <th>Created</th>
             </tr>
         </thead>
         <tbody>
-            @if (Runs.Any())
+            @if (LatestIssues.Any())
             {
-                @foreach (var run in Runs)
+                @foreach (var issue in LatestIssues)
                 {
-                    <tr class="@run.Id">
-                        <td class="text-center align-middle" rowspan="2">
-                            <span class="@run.GetRunStatusCss()"></span>
-                        </td>
-                        <td class="text-center align-middle" rowspan="2">
-                            <NavLink href="@{ "runs/" + @run.Id }">
-                                @run.Id
-                            </NavLink><br>
-                            @run.CalcType
-                        </td>
-                        <td>
-                            @run.CandidateName
-                        </td>
-                        <td>@DateTimeUtility.ToTimeAgo(run.StartedAtUtc, DateTime.UtcNow)</td>
-                        <td>@run.RunLogLastEntry</td>
-                    </tr>
-                    <tr class="@run.Id">
-                        <td colspan="100%">
-                            @run.PeriodRangeLabel
-                            @if (!string.IsNullOrEmpty(run.TimeSheetIds) && !string.IsNullOrEmpty(run.ExpenseSheetIds))
-                            {
-                                <span style="margin-left: 100px">Timesheet/s: @run.TimeSheetIds</span><span style="margin-left: 100px">Expense Sheet/s: @run.ExpenseSheetIds</span>
-                            }
-                            else if (!string.IsNullOrEmpty(run.TimeSheetIds))
-                            {
-                                <span style="margin-left: 100px">Timesheet/s: @run.TimeSheetIds</span>
-                            }
-                            else if (!string.IsNullOrEmpty(run.ExpenseSheetIds))
-                            {
-                                <span style="margin-left: 100px">Expense Sheet/s: @run.ExpenseSheetIds</span>
-                            }
-                        </td>
+                    <tr>
+                        <td>@issue.IssueId</td>
+                        <td>@issue.ToActionString()</td>
+                        <td>@DateTimeUtility.ToTimeAgo(issue.DateAdded, TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                                TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time")))</td>
                     </tr>
                 }
             }
@@ -74,9 +45,9 @@ else
 }
 
 @code {
-    private List<EvalRunLookupDto> _runs = new List<EvalRunLookupDto>();
+    private List<IssueLookupDto> _issues = new List<IssueLookupDto>();
 
-    public IReadOnlyCollection<EvalRunLookupDto> Runs => new ObservableCollection<EvalRunLookupDto>(_runs.AsReadOnly());
+    public IReadOnlyCollection<IssueLookupDto> LatestIssues => new ObservableCollection<IssueLookupDto>(_issues.AsReadOnly());
 
     protected override async Task OnInitializedAsync()
     {
@@ -91,7 +62,7 @@ else
         {
             try
             {
-                _runs = await Db.FetchLatestRunsAsync(Svc.AppSettings.DefaultConnectionStringValue!);
+                _issues = await Db.FetchLatestIssuesAsync(Svc.AppSettings.DefaultConnectionStringValue!);
                 StateHasChanged();
             }
             catch (Exception ex)

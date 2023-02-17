@@ -4,10 +4,24 @@
     {
         public int IssueId { get; set; }
         public string? Action { get; set; }
-        public string? ActionEntity { get; set; }
+        public string? ActionEntityName { get; set; }
         public int? ActionEntityId { get; set; }
         public DateTime DateAdded { get; set; }
         public List<IssueItemLookupDto>? Items { get; set; }
+
+        public string ToActionString()
+        {
+            var actionStr = string.Empty;
+            if (!string.IsNullOrWhiteSpace(Action))
+                actionStr += Action;
+            if (!string.IsNullOrWhiteSpace(ActionEntityName))
+            {
+                actionStr += $" on {ActionEntityName}";
+                if (ActionEntityId.GetValueOrDefault(0) > 0)
+                    actionStr += " " + ActionEntityId;
+            }
+            return actionStr.Trim();
+        } 
     }
 
     public class IssueItemLookupDto

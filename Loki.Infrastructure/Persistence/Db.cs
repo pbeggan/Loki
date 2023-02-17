@@ -67,22 +67,30 @@ namespace Loki.Infrastructure.Persistence
         {
             using var conn = GetOpenConnection(connectionString);
 
-            var issues = await conn.QueryAsync<IssueLookupDto>(@"
+            var issueDictionary = new Dictionary<int, IssueLookupDto>();
 
-                        Select Top 100 i.issueId as Id
-                            , i.action
-                            , i.actionEntityName as ActionEntity
-                            , i.actionEntityID 
-                            , i.dateAdded
-                            , ii.sourceEntity
-                            , ii.sourceEntityID
-                            , ii.comments
-                            , ii.description
+            var issues = await conn.QueryAsync<IssueLookupDto, IssueItemLookupDto, IssueLookupDto>(@"
+
+                          Select Top 25 *
                           From bullhorn1.BH_Issue i
                           Join bullhorn1.BH_IssueItems ii
                             On i.issueID = ii.issueID
-                          Order By i.issueID Desc"
-            );
+                          Order By i.issueID Desc",
+                (issue, issueItem) =>
+                {
+                    IssueLookupDto issueEntry;
+
+                    if (!issueDictionary.TryGetValue(issue.IssueId, out issueEntry))
+                    {
+                        issueEntry = issue;
+                        issueEntry.Items = new List<IssueItemLookupDto>();
+                        issueDictionary.Add(issueEntry.IssueId, issueEntry);
+                    }
+
+                    issueEntry.Items.Add(issueItem);
+                    return issueEntry;
+                },
+                splitOn: "issueID");
 
             return issues.ToList();
         }
