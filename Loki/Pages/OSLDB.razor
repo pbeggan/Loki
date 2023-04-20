@@ -1,0 +1,103 @@
+﻿@page "/osldb/"
+
+@inject IAppSettingsService Svc
+@inject NavigationManager NavManager
+
+@if (!Svc.AppSettings.Databases.Any(db => db.Name.Equals("osldb", StringComparison.OrdinalIgnoreCase)))
+{
+    <p>Please provide a database with a name of <b>OSLDB</b> in your <a href="settings">Settings</a>.</p>
+}
+else
+{
+    <PageHeader Title="Recurring Tasks"></PageHeader>
+     <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th width="3%"></th>
+                <th width="5%">ID</th>
+                <th width="22%">Type</th>
+                <th width="30%">Schedule</th>
+                <th width="40%">Parameters</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Tasks.Any())
+            {
+                @foreach (var grouping in Tasks.GroupBy(t => t.CorporationId).OrderBy(o => o.Key))
+                {
+                    <tr>
+                        <td colspan="100%" class="h3">Corp @grouping.Key</td>
+                    </tr>
+                    @foreach (var task in grouping.ToList().OrderBy(o => o.TaskType))
+                    {
+                        <tr>
+                            <td class="text-center align-middle">
+                                <span class="@task.GetTaskStatusCss()"></span>
+                            </td>
+                            <td class="text-center align-middle">
+                                @task.Id
+                            </td>
+                            <td class="align-middle">
+                                @task.TaskType
+                            </td>
+                            <td>
+                                @task.Schedule<br>
+                                @CronExpressionDescriptor.ExpressionDescriptor.GetDescription(task.Schedule, _options)
+                            </td>
+                            <td>
+                                @task.Parameters
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="100%">
+                        <span style="width: 100%; text-align: left;">No records found</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<RecurringTaskLookupDto> _tasks = new List<RecurringTaskLookupDto>();
+    private CronExpressionDescriptor.Options _options = new CronExpressionDescriptor.Options
+    {
+        ThrowExceptionOnParseError = false
+    };
+
+    public IReadOnlyCollection<RecurringTaskLookupDto> Tasks => new ObservableCollection<RecurringTaskLookupDto>(_tasks.AsReadOnly());
+
+    protected override async Task OnInitializedAsync()
+    {
+        Svc.OnChange += StateHasChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        await RefreshTasksAsync();
+    }
+
+    private async Task RefreshTasksAsync()
+    {
+        if (Svc.AppSettings.OsldbConnectionStringValue != null)
+        {
+            try
+            {
+                _tasks = await OslDb.FetchRecurringTasks(Svc.AppSettings.OsldbConnectionStringValue!);
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                //todo
+            }
+        }
+    }
+}
+

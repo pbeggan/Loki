@@ -1,5 +1,6 @@
 ﻿@using Loki.Domain.Interfaces
 @inject IAppSettingsService Svc
+@inject NavigationManager NavManager
 @inherits LayoutComponentBase
 
 <div class="page">
@@ -9,7 +10,14 @@
 
     <main>
          <div class="top-row px-4">
-            @Svc.AppSettings.DefaultConnectionStringName
+            @if (@NavManager.Uri.Contains("osldb"))
+            {
+                @:OSLDB
+            }
+            else
+            {
+                @Svc.AppSettings.DefaultConnectionStringName
+            }
         </div>
         
         <article class="content px-4">
