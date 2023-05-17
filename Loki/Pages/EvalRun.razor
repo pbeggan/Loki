@@ -47,6 +47,6 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        _runLogs = await Db.FetchRunLogs(Svc.AppSettings.DefaultConnectionStringValue!, RunId);
+        _runLogs = await Db.FetchRunLogsAsync(Svc.AppSettings.DefaultConnectionStringValue!, RunId);
     }
 }

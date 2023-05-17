@@ -15,7 +15,7 @@ namespace Loki.Infrastructure.Persistence
             return cnn;
         }
 
-        public static async Task<List<TimesheetLookupDto>> FetchTimesheetLookups(string connectionString)
+        public static async Task<List<TimesheetLookupDto>> FetchTimesheetLookupsAsync(string connectionString)
         {
             using var conn = GetOpenConnection(connectionString);
 
@@ -42,7 +42,7 @@ namespace Loki.Infrastructure.Persistence
             return timesheets.ToList();
         }
 
-        public static async Task<List<EvalRunLogLookupDto>> FetchRunLogs(string connectionString, long runId)
+        public static async Task<List<EvalRunLogLookupDto>> FetchRunLogsAsync(string connectionString, long runId)
         {
             using var conn = GetOpenConnection(connectionString);
 
@@ -123,6 +123,7 @@ namespace Loki.Infrastructure.Persistence
                         Select Top 100 er.timeLaborEvalRunId as Id
                             , c.candidateId as CandidateId
                             , uc.name as CandidateName
+                            , ep.evalRequestedAtUtc as EvalRequestedAtUtc
                             , ctl.label as CalcType
                             , ci.label as PeriodRangeLabel
                             , er.startedAtUtc as StartedAtUtc
@@ -156,6 +157,52 @@ namespace Loki.Infrastructure.Persistence
             );
 
             return runs.ToList();
+        }
+
+        public static async Task<List<TimesheetVersionDto>> FetchTimesheetVersionsAsync(string connectionString, int timesheetId)
+        {
+            using var conn = GetOpenConnection(connectionString);
+
+            var versionDictionary = new Dictionary<int, TimesheetVersionDto>();
+
+            var versions = await conn.QueryAsync<TimesheetVersionDto, TimesheetVersionEntryDto, TimesheetVersionDto>(@$"
+
+                        Select tsv.timeSheetVersionID as VersionId
+                            , tsv.versionNumber as VersionNumber
+                            , tsv.addedAtUtc as AddedAtUtc
+                            , tse.timeSheetEntryID as Id
+                            , tsvtse.timeSheetVersionID as VersionId
+                            , tse.timeSheetDay as Day
+                            , tse.externalID as ExternalId
+                            , tse.quantity
+                            , tse.isDeleted
+                            , tse.changedTimeSheetEntryID as ChangedEntryId
+                        From 
+                            bullhorn1.BH_TimesheetVersion tsv
+                            Join bullhorn1.BH_TimeSheetVersionTimeSheetEntry tsvtse
+                                On tsv.timeSheetVersionID = tsvtse.timeSheetVersionID
+                            Join bullhorn1.BH_TimeSheetEntry tse
+                                On tsvtse.timeSheetEntryID = tse.timeSheetEntryID
+                            Left Join bullhorn1.BH_TimeSheetEntryTime tset
+                                On tse.timeSheetEntryID = tset.timeSheetEntryTimeID
+                        Where tsv.timeSheetID = {timesheetId}",
+                        (version, versionEntry) =>
+                        {
+                            TimesheetVersionDto versionDto;
+
+                            if (!versionDictionary.TryGetValue(version.VersionId, out versionDto))
+                            {
+                                versionDto = version;
+                                versionDto.Entries = new List<TimesheetVersionEntryDto>();
+                                versionDictionary.Add(versionDto.VersionId, versionDto);
+                            }
+
+                            versionDto.Entries.Add(versionEntry);
+                            return versionDto;
+                        },
+                        splitOn: "VersionId");
+
+            return versions.ToList();
         }
 
         private static CommandDefinition DefineCommand(string query, object parameters, IDbTransaction? transaction = null)

@@ -14,6 +14,7 @@ namespace Loki.Domain.Dtos
         public string CalcType { get; set; } = null!;
         public string PeriodRangeLabel { get; set; } = null!;
         public DateTime StartedAtUtc { get; set; }
+        public DateTime EvalRequestedAtUtc { get; set; }
         public int RunStatusId { get; set; }
         public string RunLogLastEntry { get; set; } = null!;
         public string? TimeSheetIds { get; set; }

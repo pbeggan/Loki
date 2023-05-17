@@ -19,17 +19,17 @@ else
             <option value="">-- Select --</option>
             <optgroup label="** Recently Modified **">
                 @foreach (var sheet in Sheets.Where(w => w.HasRecentChanges).OrderBy(o => o.UserId).ThenBy(o => o.PlacementId).ThenByDescending(o => o.WeekEndingDate).ToList())
-                    {
-                        <option value="@sheet.Id">
+                {
+                    <option value="@sheet.Id">
                         (@sheet.Id) @sheet.GetCandidate() - @sheet.GetPlacement() - @sheet.WeekEndingDate.Date.ToShortDateString()
-                        </option>
-                    }
+                    </option>
+                }
             </optgroup>
             @foreach (var group in Sheets.GroupBy(g => g.GetCandidate()).OrderBy(o => o.Key))
             {
                 <optgroup label="@group.Key">
                     @{
-                        var max = group.Max(m => m.Id).ToString().Length + 2; 
+                        var max = group.Max(m => m.Id).ToString().Length + 2;
                     }
                     @foreach (var sheet in group.OrderBy(o => o.PlacementId).ThenByDescending(o => o.WeekEndingDate).ToList())
                     {
@@ -42,10 +42,43 @@ else
 
         </select>
     }
+    @if (Versions.Any())
+    {
+        <table>
+            <tr>
+                <th>Version</th>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+                <th>Saturday</th>
+                <th>Sunday</th>
+            </tr>
+            @foreach (var v in Versions.OrderByDescending(o => o.VersionNumber))
+            {
+                <tr>
+                    <td>@('v' + @v.VersionNumber)</td>
+                    @foreach (var dow in new List<DayOfWeek> { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday })
+                    {
+                        <td>
+                            @foreach (var e in v.EntriesByDay(dow))
+                            {
+                                <div>@e.Quantity</div>
+
+                                <br />
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </table>
+    }
 }
 
 @code {
     private List<TimesheetLookupDto> Sheets = new List<TimesheetLookupDto>();
+    private List<TimesheetVersionDto> Versions = new List<TimesheetVersionDto>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,7 +86,7 @@ else
         {
             try
             {
-                Sheets = await Db.FetchTimesheetLookups(Svc.AppSettings.DefaultConnectionStringValue!);
+                Sheets = await Db.FetchTimesheetLookupsAsync(Svc.AppSettings.DefaultConnectionStringValue!);
                 StateHasChanged();
             }
             catch (Exception ex)
@@ -65,6 +98,16 @@ else
 
     async Task OnSelect(ChangeEventArgs e)
     {
+        try
+        {
+            Versions = await Db.FetchTimesheetVersionsAsync(Svc.AppSettings.DefaultConnectionStringValue!, Convert.ToInt32(e.Value));
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            //todo
+        }
+
         //Svc.AppSettings.DefaultConnectionStringIndex = int.TryParse(e.Value?.ToString(), out var i) ? i : null;
         //await Svc.Save(Svc.AppSettings);
     }

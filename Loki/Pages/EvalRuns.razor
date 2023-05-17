@@ -51,7 +51,10 @@ else
                     </tr>
                     <tr class="@run.Id">
                         <td colspan="100%">
-                            @run.PeriodRangeLabel
+                            <span>
+                                @run.PeriodRangeLabel<br />
+                                <small>Requested @DateTimeUtility.ToTimeAgo(run.EvalRequestedAtUtc, DateTime.UtcNow)</small>
+                            </span>
                             @if (!string.IsNullOrEmpty(run.TimeSheetIds) && !string.IsNullOrEmpty(run.ExpenseSheetIds))
                             {
                                 <span style="margin-left: 100px">Timesheet/s: @run.TimeSheetIds</span><span style="margin-left: 100px">Expense Sheet/s: @run.ExpenseSheetIds</span>
